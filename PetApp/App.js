@@ -8,7 +8,6 @@ import DetailsScreen from './screens/DetailsScreen';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-  // usamos React.createElement em vez de JSX
   return React.createElement(
     NavigationContainer,
     null,
