@@ -1,18 +1,34 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../styles/globalStyles';
-
-// dados estáticos iniciais
-const PETS = [
-  { id: '1', name: 'Rex', species: 'Cachorro', age: '3 anos', description: 'Labrador brincalhão' },
-  { id: '2', name: 'Mimi', species: 'Gato', age: '2 anos', description: 'Calma e carinhosa' },
-  { id: '3', name: 'Bolt', species: 'Cachorro', age: '1 ano', description: 'Muita energia' }
-];
 
 export default function HomeScreen(props) {
   const { navigation } = props;
 
-  // função para renderizar cada card com createElement
+  const [pets, setPets] = useState([]);
+
+  // Carrega os pets do armazenamento local
+  const loadPets = async () => {
+    try {
+      const stored = await AsyncStorage.getItem('@pets');
+      if (stored) {
+        setPets(JSON.parse(stored));
+      } else {
+        setPets([]); // caso ainda não exista nada
+      }
+    } catch (error) {
+      console.log('Erro ao carregar pets:', error);
+    }
+  };
+
+  // Recarrega toda vez que a tela ganhar foco (voltar do cadastro, por exemplo)
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', loadPets);
+    return unsubscribe;
+  }, [navigation]);
+
+  // Renderização de cada card
   const renderCard = (pet) => {
     return React.createElement(
       TouchableOpacity,
@@ -28,10 +44,34 @@ export default function HomeScreen(props) {
   };
 
   return React.createElement(
-    ScrollView,
+    View,
     { style: styles.container },
+
+    // Título
     React.createElement(Text, { style: styles.headerTitle }, 'Meus Pets'),
-    // lista de cards
-    PETS.map((p) => renderCard(p))
+
+    // Botão de adicionar
+    React.createElement(
+      TouchableOpacity,
+      {
+        style: styles.button,
+        onPress: () => navigation.navigate('AddPet')
+      },
+      React.createElement(Text, { style: styles.buttonText }, 'Adicionar Pet')
+    ),
+
+    // Lista
+    React.createElement(
+      ScrollView,
+      { style: { marginTop: 20 } },
+
+      pets.length === 0
+        ? React.createElement(
+            Text,
+            { style: styles.emptyText },
+            'Nenhum pet cadastrado ainda.'
+          )
+        : pets.map((p) => renderCard(p))
+    )
   );
 }
