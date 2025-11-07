@@ -1,60 +1,75 @@
-// screens/LoginScreen.js
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../styles/globalStyles';
-import { loginUser } from '../utils/storage';
 
 export default function LoginScreen(props) {
   const { navigation } = props;
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
 
-  async function handleLogin() {
-    if (!email.trim() || !password) {
-      Alert.alert('Erro', 'Informe email e senha.');
-      return;
-    }
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [erro, setErro] = useState('');
+
+  const handleLogin = async () => {
     try {
-      const user = await loginUser({ email: email.trim(), password });
-      Alert.alert('Bem-vindo', `Olá ${user.name}`);
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Home' }]
-      });
+      const users = await AsyncStorage.getItem('@users');
+      const list = users ? JSON.parse(users) : [];
+
+      const found = list.find(
+        (u) => u.email === email && u.senha === senha
+      );
+
+      if (!found) {
+        setErro('Usuário ou senha inválidos!');
+        return;
+      }
+
+      await AsyncStorage.setItem('@currentUser', JSON.stringify(found));
+      navigation.replace('Home');
+
     } catch (e) {
-      Alert.alert('Erro', e.message || 'Falha no login.');
+      console.log('Erro ao logar:', e);
     }
-  }
+  };
 
   return React.createElement(
-    ScrollView,
-    { style: styles.container, contentContainerStyle: { padding: 16 } },
-    React.createElement(Text, { style: styles.headerTitle }, 'Entrar'),
-    React.createElement(Text, { style: styles.detailsText }, 'Email'),
+    View,
+    { style: styles.container },
+
+    React.createElement(Text, { style: styles.headerTitle }, 'Login'),
+
+    erro
+      ? React.createElement(Text, { style: styles.errorText }, erro)
+      : null,
+
     React.createElement(TextInput, {
       style: styles.input,
+      placeholder: 'E-mail',
       value: email,
-      onChangeText: setEmail,
-      placeholder: 'seu@email.com',
-      keyboardType: 'email-address',
-      autoCapitalize: 'none'
+      onChangeText: setEmail
     }),
-    React.createElement(Text, { style: styles.detailsText }, 'Senha'),
+
     React.createElement(TextInput, {
       style: styles.input,
-      value: password,
-      onChangeText: setPassword,
       placeholder: 'Senha',
-      secureTextEntry: true
+      secureTextEntry: true,
+      value: senha,
+      onChangeText: setSenha
     }),
-    React.createElement(View, { style: { marginTop: 12 } },
-      React.createElement(Button, { title: 'Entrar', onPress: handleLogin })
+
+    React.createElement(
+      TouchableOpacity,
+      { style: styles.button, onPress: handleLogin },
+      React.createElement(Text, { style: styles.buttonText }, 'Entrar')
     ),
-    React.createElement(View, { style: { marginTop: 12 } },
-      React.createElement(Button, {
-        title: 'Criar conta',
+
+    React.createElement(
+      TouchableOpacity,
+      {
+        style: styles.linkButton,
         onPress: () => navigation.navigate('Register')
-      })
+      },
+      React.createElement(Text, { style: styles.linkText }, 'Criar uma conta →')
     )
   );
 }

@@ -3,34 +3,52 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../styles/globalStyles';
 
-export default function HomeScreen(props) {
-  const { navigation } = props;
-
+export default function HomeScreen({ navigation }) {
   const [pets, setPets] = useState([]);
 
-  // Carrega os pets do armazenamento local
-  const loadPets = async () => {
-    try {
-      const stored = await AsyncStorage.getItem('@pets');
-      if (stored) {
-        setPets(JSON.parse(stored));
-      } else {
-        setPets([]); // caso ainda não exista nada
-      }
-    } catch (error) {
-      console.log('Erro ao carregar pets:', error);
-    }
-  };
-
-  // Recarrega toda vez que a tela ganhar foco (voltar do cadastro, por exemplo)
+  // 🔹 Carrega pets ao entrar na tela
   useEffect(() => {
+    const loadPets = async () => {
+      try {
+        const storedPets = await AsyncStorage.getItem('@pets');
+        if (storedPets) setPets(JSON.parse(storedPets));
+      } catch (e) {
+        console.log('Erro ao carregar pets', e);
+      }
+    };
+
     const unsubscribe = navigation.addListener('focus', loadPets);
     return unsubscribe;
   }, [navigation]);
 
-  // Renderização de cada card
-  const renderCard = (pet) => {
-    return React.createElement(
+  // 🔹 Botão no topo (Perfil)
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () =>
+        React.createElement(
+          TouchableOpacity,
+          {
+            onPress: () => navigation.navigate('Profile'),
+            style: { marginRight: 12 }
+          },
+          React.createElement(
+            Text,
+            {
+              style: {
+                color: '#007AFF',
+                fontWeight: 'bold',
+                fontSize: 16
+              }
+            },
+            'Perfil'
+          )
+        )
+    });
+  }, [navigation]);
+
+  // 🔹 Renderiza cada card de pet
+  const renderCard = (pet) =>
+    React.createElement(
       TouchableOpacity,
       {
         key: pet.id,
@@ -41,37 +59,22 @@ export default function HomeScreen(props) {
       React.createElement(Text, { style: styles.petMeta }, `${pet.species} • ${pet.age}`),
       React.createElement(Text, { style: styles.petMeta }, pet.description)
     );
-  };
 
+  // 🔹 Estrutura visual
   return React.createElement(
-    View,
+    ScrollView,
     { style: styles.container },
-
-    // Título
     React.createElement(Text, { style: styles.headerTitle }, 'Meus Pets'),
-
-    // Botão de adicionar
-    React.createElement(
-      TouchableOpacity,
-      {
-        style: styles.button,
-        onPress: () => navigation.navigate('AddPet')
-      },
-      React.createElement(Text, { style: styles.buttonText }, 'Adicionar Pet')
-    ),
-
-    // Lista
-    React.createElement(
-      ScrollView,
-      { style: { marginTop: 20 } },
-
-      pets.length === 0
-        ? React.createElement(
+    pets.length
+      ? pets.map((p) => renderCard(p))
+      : React.createElement(
+          View,
+          { style: { alignItems: 'center', marginTop: 40 } },
+          React.createElement(
             Text,
-            { style: styles.emptyText },
+            { style: { color: '#666' } },
             'Nenhum pet cadastrado ainda.'
           )
-        : pets.map((p) => renderCard(p))
-    )
+        )
   );
 }

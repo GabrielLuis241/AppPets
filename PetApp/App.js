@@ -1,94 +1,92 @@
 import React, { useEffect, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { ActivityIndicator, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Telas principais
-import HomeScreen from './screens/HomeScreen';
-import DetailsScreen from './screens/DetailsScreen';
-import AddPetScreen from './screens/AddPetScreen';
-import EditPetScreen from './screens/EditPetScreen';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-// Telas de autenticação
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
+
+import HomeScreen from './screens/HomeScreen';
+import DetailsScreen from './screens/DetailsScreen';
+import ProfileScreen from './screens/ProfileScreen'; 
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-  const [userLogged, setUserLogged] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [logged, setLogged] = useState(false);
 
-  // Verifica se o usuário está logado
+  // Verifica se já existe sessão salva
   useEffect(() => {
-    async function checkLogin() {
+    const checkSession = async () => {
       try {
-        const storedUser = await AsyncStorage.getItem('user');
-        if (storedUser) {
-          setUserLogged(JSON.parse(storedUser));
-        }
-      } catch (error) {
-        console.log('Erro ao recuperar usuário:', error);
+        const data = await AsyncStorage.getItem('@currentUser');
+        setLogged(!!data);
+      } catch (e) {
+        console.log('Erro ao carregar sessão', e);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    }
+    };
 
-    checkLogin();
+    checkSession();
   }, []);
 
-  if (loading) return null;
+  // Enquanto verifica: tela de loading
+  if (loading) {
+    return React.createElement(
+      View,
+      {
+        style: {
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#fff'
+        }
+      },
+      React.createElement(ActivityIndicator, { size: 'large' })
+    );
+  }
 
-  return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: true }}>
-        
-        {/* Usuário NÃO logado → Telas de Login/Cadastro */}
-        {!userLogged ? (
-          <>
-            <Stack.Screen
-              name="Login"
-              options={{ title: "Entrar" }}
-            >
-              {(props) => <LoginScreen {...props} setUserLogged={setUserLogged} />}
-            </Stack.Screen>
+  return React.createElement(
+    NavigationContainer,
+    null,
+    React.createElement(
+      Stack.Navigator,
+      { initialRouteName: logged ? 'Home' : 'Login' },
 
-            <Stack.Screen
-              name="Register"
-              component={RegisterScreen}
-              options={{ title: "Criar conta" }}
-            />
-          </>
-        ) : (
-          <>
-            {/* Telas PRINCIPAIS após login */}
-            <Stack.Screen
-              name="Home"
-              options={{ title: 'Meus Pets' }}
-            >
-              {(props) => <HomeScreen {...props} setUserLogged={setUserLogged} />}
-            </Stack.Screen>
+      // Rotas de autenticação
+      React.createElement(Stack.Screen, {
+        name: 'Login',
+        component: LoginScreen,
+        options: { headerShown: false }
+      }),
+      React.createElement(Stack.Screen, {
+        name: 'Register',
+        component: RegisterScreen,
+        options: { headerShown: false }
+      }),
 
-            <Stack.Screen
-              name="Details"
-              component={DetailsScreen}
-              options={{ title: 'Detalhes do Pet' }}
-            />
+      // App autenticado
+      React.createElement(Stack.Screen, {
+        name: 'Home',
+        component: HomeScreen,
+        options: { title: 'Meus Pets' }
+      }),
+      React.createElement(Stack.Screen, {
+        name: 'Details',
+        component: DetailsScreen,
+        options: { title: 'Detalhes do Pet' }
+      }),
 
-            <Stack.Screen
-              name="AddPet"
-              component={AddPetScreen}
-              options={{ title: 'Cadastrar Pet' }}
-            />
-
-            <Stack.Screen
-              name="EditPet"
-              component={EditPetScreen}
-              options={{ title: 'Editar Pet' }}
-            />
-          </>
-        )}
-
-      </Stack.Navigator>
-    </NavigationContainer>
+      // TELA DE PERFIL
+      React.createElement(Stack.Screen, {
+        name: 'Profile',
+        component: ProfileScreen,
+        options: { title: 'Meu Perfil' }
+      })
+    )
   );
 }

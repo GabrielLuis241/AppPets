@@ -4,7 +4,7 @@ const styles = StyleSheet.create({
   /* --------------------- CONTAINERS --------------------- */
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f0f4ff', // fundo suave com leve azul
     padding: 20,
   },
 
@@ -13,15 +13,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f0f4ff',
   },
 
-  /* --------------------- TEXTOS/TÍTULOS --------------------- */
+  /* --------------------- TEXTOS --------------------- */
   headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 26,
+    fontWeight: '800',
     textAlign: 'center',
     marginVertical: 12,
+    color: '#1e3a8a', // azul forte
   },
 
   sectionTitle: {
@@ -29,6 +30,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 15,
     textAlign: 'center',
+    color: '#1e3a8a',
   },
 
   text: {
@@ -50,18 +52,19 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 12,
     padding: 12,
-    borderRadius: 10,
+    borderRadius: 12,
     elevation: 3,
   },
 
   petName: {
     fontSize: 18,
     fontWeight: '700',
+    color: '#1e3a8a',
   },
 
   petMeta: {
     fontSize: 14,
-    color: '#666',
+    color: '#555',
     marginTop: 6,
   },
 
@@ -76,6 +79,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     marginBottom: 8,
+    color: '#1e3a8a',
   },
 
   detailsText: {
@@ -91,19 +95,20 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#c3d1ff',
     fontSize: 16,
     marginBottom: 12,
   },
 
   /* --------------------- BOTÕES --------------------- */
   button: {
-    backgroundColor: '#1e88e5',
+    backgroundColor: '#1e3a8a',
     paddingVertical: 14,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 10,
+    elevation: 2,
   },
 
   buttonText: {
@@ -113,16 +118,16 @@ const styles = StyleSheet.create({
   },
 
   buttonSecondary: {
-    backgroundColor: '#ccc',
+    backgroundColor: '#e2e8ff',
     paddingVertical: 14,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 10,
   },
 
   buttonSecondaryText: {
-    color: '#333',
+    color: '#1e3a8a',
     fontSize: 16,
     fontWeight: '700',
   },
@@ -147,6 +152,82 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 30,
     color: '#666',
+  },
+
+  /* ==================================================
+      ESTILOS DO PROFILE SCREEN
+     ================================================== */
+
+  profileCard: {
+    backgroundColor: '#fff',
+    padding: 18,
+    borderRadius: 14,
+    marginBottom: 18,
+    elevation: 3,
+    borderLeftWidth: 6,
+    borderLeftColor: '#1e3a8a', // marcador bonito
+  },
+
+  profileLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1e3a8a',
+    marginTop: 6,
+  },
+
+  profileValue: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 6,
+  },
+
+  profileSectionTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 10,
+    color: '#1e3a8a',
+    textAlign: 'center',
+  },
+
+  profileMetric: {
+    fontSize: 15,
+    color: '#333',
+    marginBottom: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: '#eef2ff',
+    borderRadius: 8,
+  },
+
+  profileActions: {
+    marginTop: 20,
+    gap: 10,
+  },
+
+  logoutButton: {
+    backgroundColor: '#4f46e5',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+
+  logoutText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+
+  deleteButton: {
+    backgroundColor: '#dc2626',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+
+  deleteText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
 

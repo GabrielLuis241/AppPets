@@ -1,69 +1,87 @@
-// screens/RegisterScreen.js
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../styles/globalStyles';
-import { registerUser } from '../utils/storage';
 
 export default function RegisterScreen(props) {
   const { navigation } = props;
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
 
-  async function handleRegister() {
-    if (!name.trim() || !email.trim() || !password) {
-      Alert.alert('Erro', 'Preencha nome, email e senha.');
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [erro, setErro] = useState('');
+
+  const handleRegister = async () => {
+    if (!nome || !email || !senha) {
+      setErro('Preencha todos os campos!');
       return;
     }
+
     try {
-      const user = await registerUser({ name: name.trim(), email: email.trim(), password });
-      // sucesso — navega para Home
-      Alert.alert('Sucesso', `Bem-vindo, ${user.name}!`);
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Home' }]
-      });
+      const users = await AsyncStorage.getItem('@users');
+      const list = users ? JSON.parse(users) : [];
+
+      const emailExists = list.some((u) => u.email === email);
+
+      if (emailExists) {
+        setErro('E-mail já cadastrado!');
+        return;
+      }
+
+      const newUser = {
+        id: Date.now().toString(),
+        nome,
+        email,
+        senha,
+        createdAt: new Date().toISOString()
+      };
+
+      const updatedList = [...list, newUser];
+
+      await AsyncStorage.setItem('@users', JSON.stringify(updatedList));
+      navigation.replace('Login');
+
     } catch (e) {
-      Alert.alert('Erro', e.message || 'Erro ao cadastrar.');
+      console.log('Erro ao cadastrar:', e);
     }
-  }
+  };
 
   return React.createElement(
-    ScrollView,
-    { style: styles.container, contentContainerStyle: { padding: 16 } },
+    View,
+    { style: styles.container },
+
     React.createElement(Text, { style: styles.headerTitle }, 'Criar Conta'),
-    React.createElement(Text, { style: styles.detailsText }, 'Nome'),
+
+    erro
+      ? React.createElement(Text, { style: styles.errorText }, erro)
+      : null,
+
     React.createElement(TextInput, {
       style: styles.input,
-      value: name,
-      onChangeText: setName,
-      placeholder: 'Seu nome'
+      placeholder: 'Nome',
+      value: nome,
+      onChangeText: setNome
     }),
-    React.createElement(Text, { style: styles.detailsText }, 'Email'),
+
     React.createElement(TextInput, {
       style: styles.input,
+      placeholder: 'E-mail',
       value: email,
-      onChangeText: setEmail,
-      placeholder: 'seu@email.com',
-      keyboardType: 'email-address',
-      autoCapitalize: 'none'
+      onChangeText: setEmail
     }),
-    React.createElement(Text, { style: styles.detailsText }, 'Senha'),
+
     React.createElement(TextInput, {
       style: styles.input,
-      value: password,
-      onChangeText: setPassword,
       placeholder: 'Senha',
-      secureTextEntry: true
+      secureTextEntry: true,
+      value: senha,
+      onChangeText: setSenha
     }),
-    React.createElement(View, { style: { marginTop: 12 } },
-      React.createElement(Button, { title: 'Cadastrar', onPress: handleRegister })
-    ),
-    React.createElement(View, { style: { marginTop: 12 } },
-      React.createElement(Button, {
-        title: 'Já tenho conta (Entrar)',
-        onPress: () => navigation.navigate('Login')
-      })
+
+    React.createElement(
+      TouchableOpacity,
+      { style: styles.button, onPress: handleRegister },
+      React.createElement(Text, { style: styles.buttonText }, 'Cadastrar')
     )
   );
 }
