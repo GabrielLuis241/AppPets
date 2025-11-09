@@ -1,10 +1,9 @@
 import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, Image } from 'react-native';
 import styles from '../styles/globalStyles';
 
 export default function DetailsScreen(props) {
-  // pegamos o pet que veio via navigation
-  const pet = props.route && props.route.params ? props.route.params.pet : null;
+  const pet = props.route?.params?.pet;
 
   if (!pet) {
     return React.createElement(
@@ -17,9 +16,22 @@ export default function DetailsScreen(props) {
   return React.createElement(
     ScrollView,
     { contentContainerStyle: styles.detailsContainer },
+
+    // ✅ IMAGEM GRANDE DO PET
+    pet.imageUri &&
+      React.createElement(Image, {
+        source: { uri: pet.imageUri },
+        style: {
+          width: '100%',
+          height: 260,
+          borderRadius: 12,
+          marginBottom: 20
+        }
+      }),
+
     React.createElement(Text, { style: styles.detailsTitle }, pet.name),
     React.createElement(Text, { style: styles.detailsText }, `Espécie: ${pet.species}`),
     React.createElement(Text, { style: styles.detailsText }, `Idade: ${pet.age}`),
-    React.createElement(Text, { style: styles.detailsText }, `Descrição: ${pet.description}`)
+    React.createElement(Text, { style: styles.detailsText }, `Observações: ${pet.notes || 'Nenhuma'}`)
   );
 }
