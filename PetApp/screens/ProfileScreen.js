@@ -9,40 +9,32 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../styles/globalStyles';
 
-export default function ProfileScreen(props) {
-  const { navigation } = props;
+export default function ProfileScreen({ navigation, route }) {
   const [user, setUser] = useState(null);
-  const [pets, setPets] = useState([]);
   const [metrics, setMetrics] = useState(null);
 
-  // ================================
-  // Carrega usuário logado + pets
-  // ================================
+  // 🔹 função vinda do App.js (tema)
+  const toggleTheme = route?.params?.toggleTheme;
+
   useEffect(() => {
     async function loadData() {
       const currentUser = await AsyncStorage.getItem('@currentUser');
       const petsData = await AsyncStorage.getItem('@pets');
 
       const parsedUser = currentUser ? JSON.parse(currentUser) : null;
-      const parsedPets = petsData ? JSON.parse(petsData) : [];
+      const pets = petsData ? JSON.parse(petsData) : [];
 
       setUser(parsedUser);
 
-      // filtros: pega só pets do usuário
-      const userPets = parsedPets.filter(p => p.userEmail === parsedUser?.email);
-      setPets(userPets);
-
+      const userPets = pets.filter(p => p.userEmail === parsedUser?.email);
       generateMetrics(userPets);
     }
 
     loadData();
   }, []);
 
-  // ================================
-  // Gera métricas do usuário
-  // ================================
   function generateMetrics(userPets) {
-    if (!userPets || userPets.length === 0) {
+    if (!userPets.length) {
       setMetrics({
         totalPets: 0,
         speciesMostCommon: '-',
@@ -52,10 +44,8 @@ export default function ProfileScreen(props) {
       return;
     }
 
-    // total
     const totalPets = userPets.length;
 
-    // espécie mais comum
     const speciesCount = {};
     userPets.forEach(p => {
       speciesCount[p.species] = (speciesCount[p.species] || 0) + 1;
@@ -65,17 +55,15 @@ export default function ProfileScreen(props) {
       speciesCount[a] > speciesCount[b] ? a : b
     );
 
-    // último pet cadastrado
-    const lastPet = userPets[userPets.length - 1]?.name;
+    const lastPet = userPets[userPets.length - 1].name;
 
-    // média de idade (se idade for número)
-    const validAges = userPets
+    const ages = userPets
       .map(p => parseInt(p.age))
       .filter(n => !isNaN(n));
 
     const averageAge =
-      validAges.length > 0
-        ? `${(validAges.reduce((a, b) => a + b, 0) / validAges.length).toFixed(1)} anos`
+      ages.length > 0
+        ? `${(ages.reduce((a, b) => a + b, 0) / ages.length).toFixed(1)} anos`
         : '-';
 
     setMetrics({
@@ -86,21 +74,15 @@ export default function ProfileScreen(props) {
     });
   }
 
-  // ================================
-  // Logout
-  // ================================
   async function handleLogout() {
     await AsyncStorage.removeItem('@currentUser');
     navigation.replace('Login');
   }
 
-  // ================================
-  // Excluir Conta
-  // ================================
   async function handleDeleteAccount() {
     Alert.alert(
       'Excluir Conta',
-      'Tem certeza que deseja excluir sua conta? Isso removerá também todos os seus pets.',
+      'Tem certeza que deseja excluir sua conta e todos os pets?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -111,13 +93,10 @@ export default function ProfileScreen(props) {
             const petsData = await AsyncStorage.getItem('@pets');
 
             const users = usersData ? JSON.parse(usersData) : [];
-            const petsList = petsData ? JSON.parse(petsData) : [];
+            const pets = petsData ? JSON.parse(petsData) : [];
 
-            // remove usuário
             const updatedUsers = users.filter(u => u.email !== user.email);
-
-            // remove pets do usuário
-            const updatedPets = petsList.filter(p => p.userEmail !== user.email);
+            const updatedPets = pets.filter(p => p.userEmail !== user.email);
 
             await AsyncStorage.setItem('@users', JSON.stringify(updatedUsers));
             await AsyncStorage.setItem('@pets', JSON.stringify(updatedPets));
@@ -131,75 +110,50 @@ export default function ProfileScreen(props) {
   }
 
   if (!user || !metrics) {
-    return React.createElement(
-      View,
-      { style: styles.container },
-      React.createElement(Text, { style: styles.headerTitle }, 'Carregando...')
+    return (
+      <View style={styles.container}>
+        <Text>Carregando...</Text>
+      </View>
     );
   }
 
-  // ================================
-  // RENDERIZAÇÃO FINAL
-  // ================================
-  return React.createElement(
-    View,
-    { style: styles.container },
+  return (
+    <View style={styles.container}>
+      <Text style={styles.headerTitle}>Meu Perfil</Text>
 
-    // Título
-    React.createElement(
-      Text,
-      { style: styles.headerTitle },
-      'Meu Perfil'
-    ),
+      <View style={styles.profileCard}>
+        <Text style={styles.profileLabel}>Nome</Text>
+        <Text style={styles.profileValue}>{user.name}</Text>
 
-    // Card de informações do usuário
-    React.createElement(
-      View,
-      { style: styles.profileCard },
-      React.createElement(Text, { style: styles.profileLabel }, 'Nome'),
-      React.createElement(Text, { style: styles.profileValue }, user.name),
+        <Text style={styles.profileLabel}>Email</Text>
+        <Text style={styles.profileValue}>{user.email}</Text>
+      </View>
 
-      React.createElement(Text, { style: styles.profileLabel }, 'Email'),
-      React.createElement(Text, { style: styles.profileValue }, user.email),
+      <View style={styles.profileCard}>
+        <Text style={styles.profileSectionTitle}>Métricas</Text>
+        <Text>Total de pets: {metrics.totalPets}</Text>
+        <Text>Espécie mais comum: {metrics.speciesMostCommon}</Text>
+        <Text>Último pet: {metrics.lastPet}</Text>
+        <Text>Idade média: {metrics.averageAge}</Text>
+      </View>
 
-      React.createElement(Text, { style: styles.profileLabel }, 'Conta criada em'),
-      React.createElement(Text, { style: styles.profileValue }, user.createdAt || '-')
-    ),
+      {/* ✅ NOVO BOTÃO — TEMA */}
+      <TouchableOpacity
+        style={styles.buttonSecondary}
+        onPress={toggleTheme}
+      >
+        <Text style={styles.buttonSecondaryText}>
+          Alternar Tema
+        </Text>
+      </TouchableOpacity>
 
-    // Card de métricas
-    React.createElement(
-      View,
-      { style: styles.profileCard },
-      React.createElement(Text, { style: styles.profileSectionTitle }, 'Métricas dos Pets'),
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutText}>Sair</Text>
+      </TouchableOpacity>
 
-      React.createElement(Text, { style: styles.profileMetric },
-        `Total de pets: ${metrics.totalPets}`
-      ),
-      React.createElement(Text, { style: styles.profileMetric },
-        `Espécie mais comum: ${metrics.speciesMostCommon}`
-      ),
-      React.createElement(Text, { style: styles.profileMetric },
-        `Último pet cadastrado: ${metrics.lastPet}`
-      ),
-      React.createElement(Text, { style: styles.profileMetric },
-        `Idade média: ${metrics.averageAge}`
-      )
-    ),
-
-    // Botões
-    React.createElement(
-      View,
-      { style: styles.profileActions },
-      React.createElement(
-        TouchableOpacity,
-        { style: styles.logoutButton, onPress: handleLogout },
-        React.createElement(Text, { style: styles.logoutText }, 'Sair')
-      ),
-      React.createElement(
-        TouchableOpacity,
-        { style: styles.deleteButton, onPress: handleDeleteAccount },
-        React.createElement(Text, { style: styles.deleteText }, 'Excluir Conta')
-      )
-    )
+      <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
+        <Text style={styles.deleteText}>Excluir Conta</Text>
+      </TouchableOpacity>
+    </View>
   );
 }

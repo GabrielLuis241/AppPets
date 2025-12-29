@@ -3,9 +3,7 @@ import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../styles/globalStyles';
 
-export default function RegisterScreen(props) {
-  const { navigation } = props;
-
+export default function RegisterScreen({ navigation }) {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -28,60 +26,58 @@ export default function RegisterScreen(props) {
         return;
       }
 
+      // ✅ PADRONIZAÇÃO CORRETA
       const newUser = {
         id: Date.now().toString(),
-        nome,
-        email,
+        name: nome.trim(),          // 🔥 AQUI ESTÁ O FIX
+        email: email.trim(),
         senha,
         createdAt: new Date().toISOString()
       };
 
       const updatedList = [...list, newUser];
-
       await AsyncStorage.setItem('@users', JSON.stringify(updatedList));
+
       navigation.replace('Login');
 
     } catch (e) {
       console.log('Erro ao cadastrar:', e);
+      setErro('Erro ao criar conta.');
     }
   };
 
-  return React.createElement(
-    View,
-    { style: styles.container },
+  return (
+    <View style={styles.container}>
+      <Text style={styles.headerTitle}>Criar Conta</Text>
 
-    React.createElement(Text, { style: styles.headerTitle }, 'Criar Conta'),
+      {erro ? <Text style={styles.errorText}>{erro}</Text> : null}
 
-    erro
-      ? React.createElement(Text, { style: styles.errorText }, erro)
-      : null,
+      <TextInput
+        style={styles.input}
+        placeholder="Nome"
+        value={nome}
+        onChangeText={setNome}
+      />
 
-    React.createElement(TextInput, {
-      style: styles.input,
-      placeholder: 'Nome',
-      value: nome,
-      onChangeText: setNome
-    }),
+      <TextInput
+        style={styles.input}
+        placeholder="E-mail"
+        autoCapitalize="none"
+        value={email}
+        onChangeText={setEmail}
+      />
 
-    React.createElement(TextInput, {
-      style: styles.input,
-      placeholder: 'E-mail',
-      value: email,
-      onChangeText: setEmail
-    }),
+      <TextInput
+        style={styles.input}
+        placeholder="Senha"
+        secureTextEntry
+        value={senha}
+        onChangeText={setSenha}
+      />
 
-    React.createElement(TextInput, {
-      style: styles.input,
-      placeholder: 'Senha',
-      secureTextEntry: true,
-      value: senha,
-      onChangeText: setSenha
-    }),
-
-    React.createElement(
-      TouchableOpacity,
-      { style: styles.button, onPress: handleRegister },
-      React.createElement(Text, { style: styles.buttonText }, 'Cadastrar')
-    )
+      <TouchableOpacity style={styles.button} onPress={handleRegister}>
+        <Text style={styles.buttonText}>Cadastrar</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
