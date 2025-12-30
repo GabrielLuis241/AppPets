@@ -8,17 +8,16 @@ import {
   Alert
 } from 'react-native';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../styles/globalStyles';
+import { deletePet } from '../utils/storage';
 
 export default function DetailsScreen({ navigation, route }) {
   const pet = route?.params?.pet;
 
   if (!pet) {
-    return React.createElement(Text, null, 'Pet não encontrado.');
+    return <Text>Pet não encontrado.</Text>;
   }
 
-  // 🗑️ Excluir pet
   async function handleDelete() {
     Alert.alert(
       'Excluir Pet',
@@ -29,12 +28,7 @@ export default function DetailsScreen({ navigation, route }) {
           text: 'Excluir',
           style: 'destructive',
           onPress: async () => {
-            const raw = await AsyncStorage.getItem('@pets');
-            const pets = raw ? JSON.parse(raw) : [];
-
-            const updated = pets.filter((p) => p.id !== pet.id);
-            await AsyncStorage.setItem('@pets', JSON.stringify(updated));
-
+            await deletePet(pet.id);
             navigation.navigate('Home');
           }
         }
@@ -42,47 +36,58 @@ export default function DetailsScreen({ navigation, route }) {
     );
   }
 
-  return React.createElement(
-    ScrollView,
-    { style: styles.container },
+  return (
+    <ScrollView style={styles.container}>
+      {pet.imageUri && (
+        <Image
+          source={{ uri: pet.imageUri }}
+          style={{ width: '100%', height: 260, borderRadius: 12 }}
+        />
+      )}
 
-    // 📸 Foto grande
-    pet.imageUri &&
-      React.createElement(Image, {
-        source: { uri: pet.imageUri },
-        style: {
-          width: '100%',
-          height: 260,
-          borderRadius: 12,
-          marginBottom: 16
+      <Text style={styles.detailsTitle}>{pet.name}</Text>
+      <Text style={styles.detailsText}>Espécie: {pet.species}</Text>
+      <Text style={styles.detailsText}>Raça: {pet.breed || '-'}</Text>
+      <Text style={styles.detailsText}>Idade: {pet.age || '-'}</Text>
+      <Text style={styles.detailsText}>
+        Observações: {pet.notes || '-'}
+      </Text>
+
+      {/* 🔹 Botão para ver vacinas */}
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() =>
+          navigation.navigate('VaccinationList', { pet })
         }
-      }),
+      >
+        <Text style={styles.buttonText}>Ver Vacinas</Text>
+      </TouchableOpacity>
 
-    React.createElement(Text, { style: styles.detailsTitle }, pet.name),
-    React.createElement(Text, { style: styles.detailsText }, `Espécie: ${pet.species}`),
-    React.createElement(Text, { style: styles.detailsText }, `Raça: ${pet.breed || '-'}`),
-    React.createElement(Text, { style: styles.detailsText }, `Idade: ${pet.age || '-'}`),
-    React.createElement(
-      Text,
-      { style: styles.detailsText },
-      `Observações: ${pet.notes || '-'}`
-    ),
+      {/* 🔹 Botão para adicionar vacina direto */}
+      <TouchableOpacity
+        style={[styles.button, { marginTop: 10 }]}
+        onPress={() =>
+          navigation.navigate('AddVaccine', { pet })
+        }
+      >
+        <Text style={styles.buttonText}>Adicionar Vacina</Text>
+      </TouchableOpacity>
 
-    // ✏️ Editar
-    React.createElement(
-      TouchableOpacity,
-      {
-        style: styles.button,
-        onPress: () => navigation.navigate('AddPet', { pet })
-      },
-      React.createElement(Text, { style: styles.buttonText }, 'Editar')
-    ),
+      {/* 🔹 Botão para editar pet */}
+      <TouchableOpacity
+        style={[styles.button, { marginTop: 10 }]}
+        onPress={() => navigation.navigate('AddPet', { pet })}
+      >
+        <Text style={styles.buttonText}>Editar</Text>
+      </TouchableOpacity>
 
-    // 🗑️ Excluir
-    React.createElement(
-      TouchableOpacity,
-      { style: styles.buttonSecondary, onPress: handleDelete },
-      React.createElement(Text, { style: styles.buttonSecondaryText }, 'Excluir Pet')
-    )
+      {/* 🔹 Botão para excluir pet */}
+      <TouchableOpacity
+        style={[styles.buttonSecondary, { marginTop: 10 }]}
+        onPress={handleDelete}
+      >
+        <Text style={styles.buttonSecondaryText}>Excluir Pet</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 }

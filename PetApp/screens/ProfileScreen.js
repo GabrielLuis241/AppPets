@@ -1,20 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Alert
-} from 'react-native';
-
+import React, { useEffect, useState, useContext } from 'react';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../styles/globalStyles';
+import { ThemeContext } from '../context/ThemeContext';
 
-export default function ProfileScreen({ navigation, route }) {
+export default function ProfileScreen({ navigation }) {
   const [user, setUser] = useState(null);
   const [metrics, setMetrics] = useState(null);
 
-  // 🔹 função vinda do App.js (tema)
-  const toggleTheme = route?.params?.toggleTheme;
+  const { toggleTheme } = useContext(ThemeContext);
 
   useEffect(() => {
     async function loadData() {
@@ -137,21 +131,24 @@ export default function ProfileScreen({ navigation, route }) {
         <Text>Idade média: {metrics.averageAge}</Text>
       </View>
 
-      {/* ✅ NOVO BOTÃO — TEMA */}
       <TouchableOpacity
         style={styles.buttonSecondary}
         onPress={toggleTheme}
       >
-        <Text style={styles.buttonSecondaryText}>
-          Alternar Tema
-        </Text>
+        <Text style={styles.buttonSecondaryText}>Alternar Tema</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+      <TouchableOpacity
+        style={styles.logoutButton}
+        onPress={handleLogout}
+      >
         <Text style={styles.logoutText}>Sair</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={handleDeleteAccount}
+      >
         <Text style={styles.deleteText}>Excluir Conta</Text>
       </TouchableOpacity>
     </View>
