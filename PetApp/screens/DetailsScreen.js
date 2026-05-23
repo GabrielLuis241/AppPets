@@ -1,8 +1,7 @@
 import React from 'react';
 import {
-  View,
-  Text,
   ScrollView,
+  Text,
   Image,
   TouchableOpacity,
   Alert
@@ -53,27 +52,23 @@ export default function DetailsScreen({ navigation, route }) {
         Observações: {pet.notes || '-'}
       </Text>
 
-      {/* 🔹 Botão para ver vacinas */}
+      {/* 📋 Carteira de Vacinação */}
       <TouchableOpacity
         style={styles.button}
-        onPress={() =>
-          navigation.navigate('VaccinationList', { pet })
-        }
+        onPress={() => navigation.navigate('VaccinationList', { pet })}
       >
         <Text style={styles.buttonText}>Ver Vacinas</Text>
       </TouchableOpacity>
 
-      {/* 🔹 Botão para adicionar vacina direto */}
+      {/* ➕ Nova Vacina */}
       <TouchableOpacity
         style={[styles.button, { marginTop: 10 }]}
-        onPress={() =>
-          navigation.navigate('AddVaccine', { pet })
-        }
+        onPress={() => navigation.navigate('AddVaccine', { pet })}
       >
         <Text style={styles.buttonText}>Adicionar Vacina</Text>
       </TouchableOpacity>
 
-      {/* 🔹 Botão para editar pet */}
+      {/* ✏️ Editar Pet */}
       <TouchableOpacity
         style={[styles.button, { marginTop: 10 }]}
         onPress={() => navigation.navigate('AddPet', { pet })}
@@ -81,7 +76,7 @@ export default function DetailsScreen({ navigation, route }) {
         <Text style={styles.buttonText}>Editar</Text>
       </TouchableOpacity>
 
-      {/* 🔹 Botão para excluir pet */}
+      {/* 🗑️ Excluir */}
       <TouchableOpacity
         style={[styles.buttonSecondary, { marginTop: 10 }]}
         onPress={handleDelete}
